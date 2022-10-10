@@ -17,8 +17,11 @@ public class GithubDataService {
 
     private final Logger logger = LoggerFactory.getLogger(GithubDataService.class);
 
-    @Autowired
-    private GithubClient githubClient;
+    private final GithubClient githubClient;
+
+    public GithubDataService(GithubClient githubClient) {
+        this.githubClient = githubClient;
+    }
 
     public List<GithubUserDto> getUsers() {
         List<GithubUserDto> users = new ArrayList<>();

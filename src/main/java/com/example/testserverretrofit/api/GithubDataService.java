@@ -4,13 +4,11 @@ import com.example.testserverretrofit.spi.GithubClient;
 import com.example.testserverretrofit.spi.GithubUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import retrofit2.Call;
-import retrofit2.Response;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class GithubDataService {
@@ -25,15 +23,16 @@ public class GithubDataService {
 
     public List<GithubUserDto> getUsers() {
         List<GithubUserDto> users = new ArrayList<>();
-        Call<List<GithubUser>> usersCall = githubClient.getUsers();
-        try {
-            Response<List<GithubUser>> response = usersCall.execute();
+        CompletableFuture<List<GithubUser>> usersCall = githubClient.getUsers();
 
-            if (response.body() != null) {
-                users = GithubUserMapper.toDto(response.body());
+        try {
+            while (!usersCall.isDone()) {
+                Thread.sleep(300);
             }
+
+            users = GithubUserMapper.toDto(usersCall.get());
         } catch (Exception e) {
-            logger.error("GithubDataService/getUsers=An error occurred while fetching users");
+            logger.error("GithubDataService/getUsers=An error occurred while fetching users: " + e.getMessage());
         }
 
         return users;
